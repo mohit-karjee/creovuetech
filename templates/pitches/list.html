@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block title %}My Pitches - Creovue{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-paper-plane text-primary me-2"></i>
+                    My Pitches
+                </h1>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('media_houses.list') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-building me-1"></i>Browse Media Houses
+                    </a>
+                    <a href="{{ url_for('projects.list') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>Create Project
+                    </a>
+                </div>
+            </div>
+
+            <!-- Pitch Statistics -->
+            <div class="row mb-4">
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h3 class="text-primary">{{ pitches|selectattr('status', 'equalto', 'pending')|list|length }}</h3>
+                            <small class="text-muted">Pending</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h3 class="text-info">{{ pitches|selectattr('status', 'equalto', 'reviewed')|list|length }}</h3>
+                            <small class="text-muted">Under Review</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h3 class="text-success">{{ pitches|selectattr('status', 'equalto', 'accepted')|list|length }}</h3>
+                            <small class="text-muted">Accepted</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h3 class="text-danger">{{ pitches|selectattr('status', 'equalto', 'rejected')|list|length }}</h3>
+                            <small class="text-muted">Declined</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pitches List -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Pitch History</h5>
+                </div>
+                <div class="card-body">
+                    {% if pitches %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Project</th>
+                                    <th>Media House</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Submitted</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for pitch in pitches %}
+                                <tr>
+                                    <td>
+                                        <div>
+                                            <strong>{{ pitch.project.title }}</strong><br>
+                                            <small class="text-muted">{{ pitch.project.category|title }}</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            {{ pitch.media_house.name }}<br>
+                                            <small class="text-muted">{{ pitch.media_house.industry|title }}</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <strong>${{ "{:,.0f}".format(pitch.requested_amount) }}</strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{% if pitch.status == 'pending' %}warning{% elif pitch.status == 'reviewed' %}info{% elif pitch.status == 'accepted' %}success{% else %}danger{% endif %}">
+                                            {{ pitch.status|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <small>{{ pitch.pitch_date.strftime('%b %d, %Y') }}</small>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-primary" data-bs-toggle="modal" 
+                                                    data-bs-target="#pitchModal{{ pitch.id }}">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            {% if pitch.status == 'pending' %}
+                                            <a href="{{ url_for('media_houses.detail', id=pitch.media_house.id) }}" 
+                                               class="btn btn-outline-secondary">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-paper-plane fa-3x text-muted mb-3"></i>
+                        <h4 class="text-muted">No Pitches Yet</h4>
+                        <p class="text-muted mb-4">Start by browsing media houses and pitching your projects</p>
+                        <a href="{{ url_for('media_houses.list') }}" class="btn btn-primary">
+                            <i class="fas fa-building me-1"></i>Browse Media Houses
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pitch Detail Modals -->
+{% for pitch in pitches %}
+<div class="modal fade" id="pitchModal{{ pitch.id }}" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Pitch: {{ pitch.project.title }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Media House:</strong> {{ pitch.media_house.name }}<br>
+                        <strong>Requested Amount:</strong> ${{ "{:,.0f}".format(pitch.requested_amount) }}<br>
+                        <strong>Status:</strong> 
+                        <span class="badge bg-{% if pitch.status == 'pending' %}warning{% elif pitch.status == 'reviewed' %}info{% elif pitch.status == 'accepted' %}success{% else %}danger{% endif %}">
+                            {{ pitch.status|title }}
+                        </span>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Submitted:</strong> {{ pitch.pitch_date.strftime('%B %d, %Y at %I:%M %p') }}<br>
+                        {% if pitch.response_date %}
+                        <strong>Response:</strong> {{ pitch.response_date.strftime('%B %d, %Y at %I:%M %p') }}
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <h6>Pitch Description:</h6>
+                <div class="bg-light p-3 rounded mb-3">
+                    {{ pitch.pitch_text|replace('\n', '<br>')|safe }}
+                </div>
+                
+                {% if pitch.media_house_response %}
+                <h6>Media House Response:</h6>
+                <div class="bg-{% if pitch.status == 'accepted' %}success{% else %}danger{% endif %} bg-opacity-10 p-3 rounded">
+                    {{ pitch.media_house_response|replace('\n', '<br>')|safe }}
+                </div>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="{{ url_for('projects.detail', id=pitch.project.id) }}" class="btn btn-primary">
+                    View Project
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

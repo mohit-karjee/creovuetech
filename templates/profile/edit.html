@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Profile - Creovue{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-custom">
+                <div class="card-header">
+                    <h3 class="mb-0">
+                        <i class="fas fa-user-edit me-2"></i>Edit Your Profile
+                    </h3>
+                    <p class="text-muted mb-0">Update your information to showcase your creative identity</p>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" class="needs-validation" novalidate>
+                        {{ form.hidden_tag() }}
+                        
+                        <!-- Profile Header -->
+                        <div class="row mb-4">
+                            <div class="col-md-3 text-center">
+                                <div class="profile-avatar mb-3">
+                                    <i class="fas fa-user-circle fa-5x text-primary"></i>
+                                </div>
+                                <button type="button" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-camera me-1"></i>Change Photo
+                                </button>
+                            </div>
+                            <div class="col-md-9">
+                                <div class="mb-3">
+                                    {{ form.full_name.label(class="form-label") }}
+                                    {{ form.full_name(class="form-control" + (" is-invalid" if form.full_name.errors else ""), placeholder="Enter your full name") }}
+                                    {% if form.full_name.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.full_name.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Username</label>
+                                    <input type="text" class="form-control" value="{{ current_user.username }}" readonly>
+                                    <div class="form-text">Username cannot be changed. Contact support if needed.</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" class="form-control" value="{{ current_user.email }}" readonly>
+                                    <div class="form-text">Email cannot be changed. Contact support if needed.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Creator Information -->
+                        <div class="card mb-4 border-primary">
+                            <div class="card-header bg-primary text-white">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-palette me-2"></i>Creator Information
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        {{ form.creator_type.label(class="form-label") }}
+                                        {{ form.creator_type(class="form-select" + (" is-invalid" if form.creator_type.errors else "")) }}
+                                        {% if form.creator_type.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.creator_type.errors %}{{ error }}{% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        {{ form.location.label(class="form-label") }}
+                                        {{ form.location(class="form-control" + (" is-invalid" if form.location.errors else ""), placeholder="City, Country") }}
+                                        {% if form.location.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.location.errors %}{{ error }}{% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    {{ form.bio.label(class="form-label") }}
+                                    {{ form.bio(class="form-control" + (" is-invalid" if form.bio.errors else ""), placeholder="Tell the community about your creative journey, skills, and what inspires you...", rows="4", maxlength="500") }}
+                                    {% if form.bio.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.bio.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">This will be displayed on your public profile and help others understand your creative focus.</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    {{ form.website.label(class="form-label") }}
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-link"></i>
+                                        </span>
+                                        {{ form.website(class="form-control" + (" is-invalid" if form.website.errors else ""), placeholder="https://your-portfolio-website.com") }}
+                                    </div>
+                                    {% if form.website.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.website.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">Link to your portfolio, website, or professional profile.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Profile Statistics -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-chart-bar me-2"></i>Your Creovue Journey
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row text-center">
+                                    <div class="col-md-3 mb-3">
+                                        <h4 class="text-primary">{{ current_user.owned_circles|length }}</h4>
+                                        <small class="text-muted">Circles Created</small>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <h4 class="text-success">{{ current_user.circle_memberships|length }}</h4>
+                                        <small class="text-muted">Circles Joined</small>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <h4 class="text-warning">{{ current_user.projects|length }}</h4>
+                                        <small class="text-muted">Projects Created</small>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <h4 class="text-info">{{ current_user.created_at.strftime('%Y') }}</h4>
+                                        <small class="text-muted">Member Since</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Privacy Settings -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-shield-alt me-2"></i>Privacy & Visibility
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="profileVisible" checked>
+                                    <label class="form-check-label" for="profileVisible">
+                                        <strong>Make my profile visible to other creators</strong>
+                                        <div class="form-text">Allow other creators to discover and connect with you.</div>
+                                    </label>
+                                </div>
+                                
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
+                                    <label class="form-check-label" for="emailNotifications">
+                                        <strong>Email notifications for circle invitations</strong>
+                                        <div class="form-text">Receive emails when you're invited to join circles.</div>
+                                    </label>
+                                </div>
+                                
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="projectUpdates" checked>
+                                    <label class="form-check-label" for="projectUpdates">
+                                        <strong>Project update notifications</strong>
+                                        <div class="form-text">Get notified about updates to projects you're following.</div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex gap-3 justify-content-end">
+                            <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Account Management -->
+            <div class="card mt-4 border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="mb-0">
+                        <i class="fas fa-cog me-2"></i>Account Management
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Change Password</h6>
+                            <p class="text-muted small mb-3">Update your account password for security.</p>
+                            <button class="btn btn-outline-warning btn-sm">
+                                <i class="fas fa-key me-1"></i>Change Password
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Download Data</h6>
+                            <p class="text-muted small mb-3">Get a copy of your account data and activity.</p>
+                            <button class="btn btn-outline-info btn-sm">
+                                <i class="fas fa-download me-1"></i>Download Data
+                            </button>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="text-center">
+                        <h6 class="text-danger">Danger Zone</h6>
+                        <p class="text-muted small mb-3">These actions cannot be undone. Please be careful.</p>
+                        <button class="btn btn-outline-danger btn-sm">
+                            <i class="fas fa-trash me-1"></i>Delete Account
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Character counter for bio field
+    const bioField = document.querySelector('textarea[maxlength="500"]');
+    if (bioField) {
+        const counter = bioField.parentNode.querySelector('.form-text');
+        const maxLength = 500;
+        
+        function updateCounter() {
+            const remaining = maxLength - bioField.value.length;
+            const counterText = counter.textContent.split('(')[0];
+            counter.textContent = `${counterText} (${remaining} characters remaining)`;
+            
+            if (remaining < 50) {
+                counter.classList.add('text-warning');
+            } else {
+                counter.classList.remove('text-warning');
+            }
+        }
+        
+        bioField.addEventListener('input', updateCounter);
+        updateCounter(); // Initial call
+    }
+});
+</script>
+{% endblock %}

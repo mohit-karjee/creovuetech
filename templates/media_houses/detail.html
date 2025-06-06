@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}{{ media_house.name }} - Media Partners - Creovue{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="d-flex align-items-center mb-4">
+                <a href="{{ url_for('media_houses.list') }}" class="btn btn-outline-secondary me-3">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+                <div class="d-flex align-items-center">
+                    {% if media_house.logo_url %}
+                    <img src="{{ media_house.logo_url }}" alt="{{ media_house.name }}" 
+                         class="rounded me-3" style="width: 80px; height: 80px; object-fit: cover;">
+                    {% else %}
+                    <div class="bg-primary rounded d-flex align-items-center justify-content-center me-3" 
+                         style="width: 80px; height: 80px;">
+                        <i class="fas fa-building text-white fa-2x"></i>
+                    </div>
+                    {% endif %}
+                    <div>
+                        <h1 class="h3 mb-1">{{ media_house.name }}</h1>
+                        {% if media_house.industry %}
+                        <span class="badge bg-primary">{{ media_house.industry|title }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Description -->
+            {% if media_house.description %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">About {{ media_house.name }}</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0">{{ media_house.description }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Investment Criteria -->
+            {% if media_house.investment_criteria %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Investment Criteria</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0">{{ media_house.investment_criteria }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Recent Investments -->
+            {% if recent_investments %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Recent Investments</h5>
+                </div>
+                <div class="card-body">
+                    {% for investment in recent_investments %}
+                    <div class="d-flex justify-content-between align-items-center {% if not loop.last %}border-bottom pb-3 mb-3{% endif %}">
+                        <div>
+                            <h6 class="mb-1">{{ investment.project.title }}</h6>
+                            <small class="text-muted">{{ investment.investment_date.strftime('%B %d, %Y') }}</small>
+                        </div>
+                        <div class="text-end">
+                            <strong>${{ "{:,.0f}".format(investment.amount) }}</strong><br>
+                            <small class="text-muted">{{ investment.investment_type|title }}</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Investment Information</h5>
+                </div>
+                <div class="card-body">
+                    {% if media_house.investment_range_min > 0 %}
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Investment Range</label>
+                        <div class="h5">${{ "{:,.0f}".format(media_house.investment_range_min) }} - ${{ "{:,.0f}".format(media_house.investment_range_max) }}</div>
+                    </div>
+                    {% endif %}
+
+                    {% if media_house.preferred_categories %}
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Preferred Categories</label>
+                        <div>
+                            {% for category in media_house.preferred_categories.split(',') %}
+                            <span class="badge bg-light text-dark me-1 mb-1">{{ category.strip()|title }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if media_house.contact_email %}
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Contact</label>
+                        <div>
+                            <a href="mailto:{{ media_house.contact_email }}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-envelope me-1"></i>{{ media_house.contact_email }}
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if media_house.website %}
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Website</label>
+                        <div>
+                            <a href="{{ media_house.website }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-external-link-alt me-1"></i>Visit Website
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if current_user.is_authenticated %}
+                    <div class="mb-3">
+                        <a href="{{ url_for('pitches.create_media_house_pitch', media_house_id=media_house.id) }}" 
+                           class="btn btn-primary w-100">
+                            <i class="fas fa-paper-plane me-1"></i>Pitch Your Project
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    <div class="text-muted small">
+                        <i class="fas fa-calendar me-1"></i>
+                        Joined {{ media_house.created_at.strftime('%B %Y') }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

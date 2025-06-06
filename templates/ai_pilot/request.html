@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}New AI Request - Creovue AI Pilot{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="d-flex align-items-center mb-4">
+                <a href="{{ url_for('ai_pilot.dashboard') }}" class="btn btn-outline-secondary me-3">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-robot text-primary me-2"></i>
+                    New AI Assistance Request
+                </h1>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="mb-4">
+                            <label for="request_type" class="form-label">Request Type</label>
+                            <select class="form-select" id="request_type" name="request_type" required>
+                                <option value="">Select assistance type...</option>
+                                <option value="budget_planning">Budget Planning & Cost Analysis</option>
+                                <option value="script_draft">Script Writing & Story Development</option>
+                                <option value="marketing_strategy">Marketing & Promotion Strategy</option>
+                                <option value="collaboration_matching">Collaboration & Team Building</option>
+                                <option value="funding_strategy">Funding & Investment Strategy</option>
+                                <option value="production_planning">Production Planning & Scheduling</option>
+                                <option value="legal_guidance">Legal & Contract Guidance</option>
+                                <option value="technical_support">Technical & Equipment Support</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="project_id" class="form-label">Related Project (Optional)</label>
+                            <select class="form-select" id="project_id" name="project_id">
+                                <option value="">General request (not project-specific)</option>
+                                {% for project in user_projects %}
+                                <option value="{{ project.id }}">{{ project.title }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">Select a project if this request is specific to one of your projects</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="description" class="form-label">Detailed Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="6" 
+                                      placeholder="Describe your specific needs, challenges, or questions. The more details you provide, the better our AI can assist you..." required></textarea>
+                            <div class="form-text">
+                                Be specific about your goals, budget constraints, timeline, and any particular challenges you're facing.
+                            </div>
+                        </div>
+
+                        <div class="bg-light p-4 rounded mb-4">
+                            <h6 class="text-primary mb-3">
+                                <i class="fas fa-lightbulb me-1"></i>
+                                AI Assistance Examples
+                            </h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <ul class="list-unstyled small">
+                                        <li class="mb-2">
+                                            <strong>Budget Planning:</strong> "Help me create a budget for a 10-minute short film with a $15,000 budget"
+                                        </li>
+                                        <li class="mb-2">
+                                            <strong>Script Development:</strong> "I need help structuring a documentary about climate change"
+                                        </li>
+                                        <li class="mb-2">
+                                            <strong>Marketing Strategy:</strong> "How should I promote my indie music album on social media?"
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="list-unstyled small">
+                                        <li class="mb-2">
+                                            <strong>Collaboration:</strong> "I need a cinematographer for a horror film in Los Angeles"
+                                        </li>
+                                        <li class="mb-2">
+                                            <strong>Funding Strategy:</strong> "What's the best approach to fund a $100k feature film?"
+                                        </li>
+                                        <li class="mb-2">
+                                            <strong>Production Planning:</strong> "Help me create a shooting schedule for a 5-day production"
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('ai_pilot.dashboard') }}" class="btn btn-outline-secondary me-md-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-1"></i>Submit Request
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

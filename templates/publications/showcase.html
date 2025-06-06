@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Creator Showcase - Creovue{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-eye text-primary me-2"></i>
+                    Creator Showcase
+                </h1>
+                {% if current_user.is_authenticated %}
+                <div class="dropdown">
+                    <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-plus me-1"></i>Publish Work
+                    </button>
+                    <ul class="dropdown-menu">
+                        {% for project in current_user.projects %}
+                        <li>
+                            <a class="dropdown-item" href="{{ url_for('publications.create_publication_form', project_id=project.id) }}">
+                                {{ project.title }}
+                            </a>
+                        </li>
+                        {% else %}
+                        <li><span class="dropdown-item-text text-muted">No projects to publish</span></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Published Works Grid -->
+            <div class="row">
+                {% for publication in publications %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        {% if publication.showcase_type == 'video' and publication.external_url %}
+                        <div class="card-img-top bg-dark text-white d-flex align-items-center justify-content-center" style="height: 200px;">
+                            <i class="fas fa-play-circle fa-3x"></i>
+                        </div>
+                        {% elif publication.showcase_type == 'image' and publication.external_url %}
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                            <i class="fas fa-image fa-3x text-muted"></i>
+                        </div>
+                        {% elif publication.showcase_type == 'audio' %}
+                        <div class="card-img-top bg-success text-white d-flex align-items-center justify-content-center" style="height: 200px;">
+                            <i class="fas fa-music fa-3x"></i>
+                        </div>
+                        {% else %}
+                        <div class="card-img-top bg-primary text-white d-flex align-items-center justify-content-center" style="height: 200px;">
+                            <i class="fas fa-file-alt fa-3x"></i>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="card-body">
+                            <h5 class="card-title">{{ publication.title }}</h5>
+                            <p class="card-text text-muted small mb-3">
+                                {{ publication.description[:120] }}{% if publication.description|length > 120 %}...{% endif %}
+                            </p>
+                            
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="badge bg-secondary">{{ publication.showcase_type|title }}</span>
+                                <small class="text-muted">
+                                    <i class="fas fa-eye me-1"></i>{{ publication.views_count }} views
+                                </small>
+                            </div>
+                            
+                            {% if publication.funding_goal > 0 %}
+                            <div class="mb-3">
+                                <small class="text-muted">Funding Progress:</small>
+                                <div class="progress progress-modern mt-1">
+                                    <div class="progress-bar" style="width: {{ publication.funding_percentage }}%"></div>
+                                </div>
+                                <small class="text-muted">
+                                    ${{ "{:,.0f}".format(publication.current_funding) }} / ${{ "{:,.0f}".format(publication.funding_goal) }}
+                                </small>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a href="{{ url_for('publications.view_publication', id=publication.id) }}" 
+                                   class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-eye me-1"></i>View
+                                </a>
+                                <small class="text-muted">
+                                    by {{ publication.creator.username }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="col-12">
+                    <div class="text-center py-5">
+                        <i class="fas fa-eye fa-3x text-muted mb-3"></i>
+                        <h4 class="text-muted">No Published Works Yet</h4>
+                        <p class="text-muted">Be the first to showcase your creative work</p>
+                        {% if current_user.is_authenticated %}
+                        <a href="{{ url_for('projects.create') }}" class="btn btn-primary">
+                            <i class="fas fa-plus me-1"></i>Create Project
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

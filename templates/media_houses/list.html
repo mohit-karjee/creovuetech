@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Media Partners - Creovue{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-building text-primary me-2"></i>
+                    Media Partners
+                </h1>
+            </div>
+
+            <!-- Search and Filter -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-6">
+                            <input type="text" class="form-control" name="search" 
+                                   placeholder="Search media houses..." value="{{ current_search }}">
+                        </div>
+                        <div class="col-md-4">
+                            <select class="form-select" name="industry">
+                                <option value="">All Industries</option>
+                                <option value="streaming" {% if current_industry == 'streaming' %}selected{% endif %}>Streaming</option>
+                                <option value="tv" {% if current_industry == 'tv' %}selected{% endif %}>Television</option>
+                                <option value="film" {% if current_industry == 'film' %}selected{% endif %}>Film</option>
+                                <option value="music" {% if current_industry == 'music' %}selected{% endif %}>Music</option>
+                                <option value="gaming" {% if current_industry == 'gaming' %}selected{% endif %}>Gaming</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-search me-1"></i>Search
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Media Houses Grid -->
+            <div class="row">
+                {% for media_house in media_houses %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex align-items-start mb-3">
+                                {% if media_house.logo_url %}
+                                <img src="{{ media_house.logo_url }}" alt="{{ media_house.name }}" 
+                                     class="rounded me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                                {% else %}
+                                <div class="bg-primary rounded d-flex align-items-center justify-content-center me-3" 
+                                     style="width: 60px; height: 60px;">
+                                    <i class="fas fa-building text-white"></i>
+                                </div>
+                                {% endif %}
+                                <div class="flex-grow-1">
+                                    <h5 class="card-title mb-1">{{ media_house.name }}</h5>
+                                    {% if media_house.industry %}
+                                    <span class="badge bg-secondary">{{ media_house.industry|title }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            {% if media_house.description %}
+                            <p class="card-text text-muted small mb-3">
+                                {{ media_house.description[:150] }}{% if media_house.description|length > 150 %}...{% endif %}
+                            </p>
+                            {% endif %}
+                            
+                            {% if media_house.investment_range_min > 0 %}
+                            <div class="mb-3">
+                                <small class="text-muted">Investment Range:</small><br>
+                                <strong>${{ "{:,.0f}".format(media_house.investment_range_min) }} - ${{ "{:,.0f}".format(media_house.investment_range_max) }}</strong>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a href="{{ url_for('media_houses.detail', id=media_house.id) }}" 
+                                   class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-eye me-1"></i>View Details
+                                </a>
+                                {% if media_house.website %}
+                                <a href="{{ media_house.website }}" target="_blank" 
+                                   class="btn btn-link btn-sm text-decoration-none">
+                                    <i class="fas fa-external-link-alt"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="col-12">
+                    <div class="text-center py-5">
+                        <i class="fas fa-building fa-3x text-muted mb-3"></i>
+                        <h4 class="text-muted">No Media Partners Found</h4>
+                        <p class="text-muted">Try adjusting your search criteria</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

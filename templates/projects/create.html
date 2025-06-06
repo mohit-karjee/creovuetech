@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}Create Project - Creovue{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-custom">
+                <div class="card-header">
+                    <h3 class="mb-0">
+                        <i class="fas fa-plus me-2"></i>Create a New Project
+                    </h3>
+                    <p class="text-muted mb-0">Showcase your creative vision and bring it to life</p>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" class="needs-validation" novalidate>
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-4">
+                            {{ form.title.label(class="form-label") }}
+                            {{ form.title(class="form-control" + (" is-invalid" if form.title.errors else ""), placeholder="Enter a compelling project title") }}
+                            {% if form.title.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.title.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Choose a title that captures the essence of your creative project.</div>
+                        </div>
+
+                        <div class="mb-4">
+                            {{ form.description.label(class="form-label") }}
+                            {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), placeholder="Describe your project vision, goals, timeline, and what makes it unique...", rows="5", maxlength="2000") }}
+                            {% if form.description.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.description.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Provide a detailed description that will inspire potential collaborators and funders.</div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                {{ form.category.label(class="form-label") }}
+                                {{ form.category(class="form-select" + (" is-invalid" if form.category.errors else "")) }}
+                                {% if form.category.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.category.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-4">
+                                <label for="circle_id" class="form-label">Associated Circle (Optional)</label>
+                                <select class="form-select" id="circle_id" name="circle_id">
+                                    <option value="">No circle - Individual project</option>
+                                    {% for circle in circles %}
+                                    <option value="{{ circle.id }}">{{ circle.name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">Associate this project with one of your circles for collaborative development.</div>
+                            </div>
+                        </div>
+
+                        <!-- Funding Section -->
+                        <div class="card mb-4 border-primary">
+                            <div class="card-header bg-primary text-white">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-dollar-sign me-2"></i>Funding Details (Optional)
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        {{ form.funding_goal.label(class="form-label") }}
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            {{ form.funding_goal(class="form-control" + (" is-invalid" if form.funding_goal.errors else ""), placeholder="0") }}
+                                        </div>
+                                        {% if form.funding_goal.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.funding_goal.errors %}{{ error }}{% endfor %}
+                                            </div>
+                                        {% endif %}
+                                        <div class="form-text">Set to 0 if you don't need funding for this project.</div>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        {{ form.funding_deadline.label(class="form-label") }}
+                                        {{ form.funding_deadline(class="form-control" + (" is-invalid" if form.funding_deadline.errors else ""), type="date") }}
+                                        {% if form.funding_deadline.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.funding_deadline.errors %}{{ error }}{% endfor %}
+                                            </div>
+                                        {% endif %}
+                                        <div class="form-text">Deadline for reaching your funding goal.</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Funding Features:</strong> Once you set a funding goal, your project will be eligible for both community crowdfunding and media house investments.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-3 justify-content-end">
+                            <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Create Project
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Project Guidelines -->
+            <div class="card mt-4 border-success">
+                <div class="card-header bg-success text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-rocket me-2"></i>Project Success Tips
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled mb-0">
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    <strong>Clear vision:</strong> Define your project's goals and scope
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    <strong>Realistic timeline:</strong> Set achievable milestones
+                                </li>
+                                <li class="mb-0">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    <strong>Strong presentation:</strong> Use compelling descriptions
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled mb-0">
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    <strong>Community engagement:</strong> Share updates regularly
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    <strong>Transparent funding:</strong> Explain how funds will be used
+                                </li>
+                                <li class="mb-0">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    <strong>Proof of concept:</strong> Show early work or prototypes
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

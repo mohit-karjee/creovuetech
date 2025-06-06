@@ -1,0 +1,341 @@
+{% extends "base.html" %}
+
+{% block title %}{{ project.title }} - Creovue{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Project Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('projects.list') }}">Projects</a></li>
+                    <li class="breadcrumb-item active">{{ project.title }}</li>
+                </ol>
+            </nav>
+            
+            <div class="d-flex align-items-start justify-content-between">
+                <div>
+                    <h1 class="display-6 fw-bold mb-2">{{ project.title }}</h1>
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <span class="badge badge-secondary category-badge">{{ project.category.title() }}</span>
+                        <span class="badge badge-{{ 'success' if project.status == 'completed' else 'warning' if project.status == 'production' else 'primary' if project.status == 'funding' else 'info' }}">
+                            {{ project.status.title() }}
+                        </span>
+                        <span class="text-muted">
+                            <i class="fas fa-calendar me-1"></i>
+                            Created {{ project.created_at.strftime('%B %d, %Y') }}
+                        </span>
+                        {% if project.circle %}
+                        <a href="{{ url_for('circles.detail', id=project.circle.id) }}" class="text-decoration-none">
+                            <span class="badge badge-primary">
+                                <i class="fas fa-users me-1"></i>{{ project.circle.name }}
+                            </span>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {% if can_edit %}
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('pitches.create_pitch_form', project_id=project.id) }}" class="btn btn-success">
+                        <i class="fas fa-paper-plane me-1"></i>Pitch to Media House
+                    </a>
+                    <a href="{{ url_for('publications.create_publication_form', project_id=project.id) }}" class="btn btn-info">
+                        <i class="fas fa-upload me-1"></i>Publish for Crowdfunding
+                    </a>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-cog me-2"></i>Manage
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>Edit Project</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-plus me-2"></i>Add Milestone</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-trash me-2"></i>Delete Project</a></li>
+                        </ul>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Project Description -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Project Overview
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">{{ project.description }}</p>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-2">Project Creator</h6>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-user-circle fa-2x text-primary me-3"></i>
+                                <div>
+                                    <strong>{{ project.creator.full_name or project.creator.username }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ project.creator.creator_type.title() if project.creator.creator_type else 'Creator' }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-2">Project Details</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>Category:</strong> {{ project.category.title() }}</li>
+                                <li><strong>Status:</strong> {{ project.status.title() }}</li>
+                                {% if project.circle %}
+                                <li><strong>Circle:</strong> <a href="{{ url_for('circles.detail', id=project.circle.id) }}">{{ project.circle.name }}</a></li>
+                                {% endif %}
+                                <li><strong>Last Updated:</strong> {{ project.updated_at.strftime('%B %d, %Y') }}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Funding Progress -->
+            {% if project.funding_goal > 0 %}
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>Funding Progress
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4 text-center">
+                            <h3 class="text-primary">${{ "{:,.0f}".format(project.current_funding) }}</h3>
+                            <p class="text-muted mb-0">Raised</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <h3 class="text-success">{{ "{:.0f}".format(project.funding_percentage) }}%</h3>
+                            <p class="text-muted mb-0">of Goal</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <h3 class="text-warning">{{ project.days_remaining }}</h3>
+                            <p class="text-muted mb-0">Days Left</p>
+                        </div>
+                    </div>
+                    
+                    <div class="progress mb-3" style="height: 10px;">
+                        <div class="progress-bar" role="progressbar" 
+                             style="width: {{ project.funding_percentage }}%" 
+                             aria-valuenow="{{ project.funding_percentage }}" 
+                             aria-valuemin="0" aria-valuemax="100">
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted">Goal: ${{ "{:,.0f}".format(project.funding_goal) }}</span>
+                        {% if project.funding_deadline %}
+                        <span class="text-muted">Deadline: {{ project.funding_deadline.strftime('%B %d, %Y') }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <button class="btn btn-success btn-lg me-3">
+                            <i class="fas fa-heart me-2"></i>Support This Project
+                        </button>
+                        <button class="btn btn-outline-primary">
+                            <i class="fas fa-share me-2"></i>Share Project
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Project Milestones -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-tasks me-2"></i>Project Milestones
+                    </h5>
+                    {% if can_edit %}
+                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addMilestoneModal">
+                        <i class="fas fa-plus me-1"></i>Add Milestone
+                    </button>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    {% if milestones %}
+                    <div class="timeline">
+                        {% for milestone in milestones %}
+                        <div class="milestone {{ 'completed' if milestone.is_completed else '' }}">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="mb-1">{{ milestone.title }}</h6>
+                                {% if can_edit %}
+                                <div class="form-check">
+                                    <input class="form-check-input milestone-checkbox" type="checkbox" 
+                                           data-milestone-id="{{ milestone.id }}" 
+                                           {{ 'checked' if milestone.is_completed else '' }}>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% if milestone.description %}
+                            <p class="text-muted small mb-2">{{ milestone.description }}</p>
+                            {% endif %}
+                            <div class="d-flex justify-content-between align-items-center">
+                                {% if milestone.target_date %}
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    Target: {{ milestone.target_date.strftime('%B %d, %Y') }}
+                                </small>
+                                {% endif %}
+                                {% if milestone.completion_date %}
+                                <small class="text-success">
+                                    <i class="fas fa-check-circle me-1"></i>
+                                    Completed: {{ milestone.completion_date.strftime('%B %d, %Y') }}
+                                </small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-tasks fa-3x text-muted mb-3"></i>
+                        <h6>No milestones yet</h6>
+                        <p class="text-muted">Break down your project into achievable milestones to track progress.</p>
+                        {% if can_edit %}
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMilestoneModal">
+                            <i class="fas fa-plus me-2"></i>Add First Milestone
+                        </button>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Quick Actions -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-bolt me-2"></i>Quick Actions
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if project.funding_goal > 0 %}
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-success">
+                            <i class="fas fa-dollar-sign me-2"></i>Fund This Project
+                        </button>
+                        <button class="btn btn-outline-primary">
+                            <i class="fas fa-share me-2"></i>Share with Friends
+                        </button>
+                        <button class="btn btn-outline-info">
+                            <i class="fas fa-bookmark me-2"></i>Save for Later
+                        </button>
+                    </div>
+                    {% else %}
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary">
+                            <i class="fas fa-handshake me-2"></i>Offer Collaboration
+                        </button>
+                        <button class="btn btn-outline-primary">
+                            <i class="fas fa-share me-2"></i>Share Project
+                        </button>
+                        <button class="btn btn-outline-info">
+                            <i class="fas fa-bookmark me-2"></i>Save for Later
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Project Statistics -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>Project Stats
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6 mb-3">
+                            <h4 class="text-primary">{{ milestones|length }}</h4>
+                            <small class="text-muted">Milestones</small>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <h4 class="text-success">{{ milestones|selectattr('is_completed')|list|length }}</h4>
+                            <small class="text-muted">Completed</small>
+                        </div>
+                        {% if project.funding_goal > 0 %}
+                        <div class="col-6">
+                            <h4 class="text-warning">{{ project.days_remaining }}</h4>
+                            <small class="text-muted">Days Left</small>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-info">0</h4>
+                            <small class="text-muted">Backers</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Related Projects -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>Similar Projects
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="text-center py-3">
+                        <i class="fas fa-search fa-2x text-muted mb-2"></i>
+                        <p class="text-muted small">Discover other {{ project.category }} projects</p>
+                        <a href="{{ url_for('projects.list', category=project.category) }}" class="btn btn-sm btn-outline-primary">
+                            Browse {{ project.category.title() }} Projects
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Milestone Modal -->
+{% if can_edit %}
+<div class="modal fade" id="addMilestoneModal" tabindex="-1" aria-labelledby="addMilestoneModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('projects.add_milestone', id=project.id) }}">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addMilestoneModalLabel">Add New Milestone</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="milestoneTitle" class="form-label">Milestone Title</label>
+                        <input type="text" class="form-control" id="milestoneTitle" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="milestoneDescription" class="form-label">Description (Optional)</label>
+                        <textarea class="form-control" id="milestoneDescription" name="description" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="milestoneDate" class="form-label">Target Date (Optional)</label>
+                        <input type="date" class="form-control" id="milestoneDate" name="target_date">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Milestone</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

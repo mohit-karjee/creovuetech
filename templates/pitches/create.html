@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Pitch to Media House - Creovue{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="d-flex align-items-center mb-4">
+                <a href="{{ url_for('projects.detail', id=project.id) }}" class="btn btn-outline-secondary me-3">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-paper-plane text-primary me-2"></i>
+                    Pitch to Media House
+                </h1>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5>Project: {{ project.title }}</h5>
+                            <p class="text-muted">{{ project.description[:150] }}...</p>
+                        </div>
+                        <div class="col-md-6">
+                            <span class="badge bg-primary">{{ project.category|title }}</span>
+                            {% if project.funding_goal > 0 %}
+                            <p class="mt-2 mb-0">
+                                <small class="text-muted">Current Goal: ${{ "{:,.0f}".format(project.funding_goal) }}</small>
+                            </p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <form method="POST" action="{{ url_for('pitches.submit_pitch') }}">
+                        <input type="hidden" name="project_id" value="{{ project.id }}">
+                        
+                        <div class="mb-4">
+                            <label for="media_house_id" class="form-label">Select Media House</label>
+                            <select class="form-select" id="media_house_id" name="media_house_id" required>
+                                <option value="">Choose a media house...</option>
+                                {% for house in media_houses %}
+                                <option value="{{ house.id }}">
+                                    {{ house.name }} - {{ house.industry|title }}
+                                    {% if house.investment_range_min > 0 %}
+                                    (${{ "{:,.0f}".format(house.investment_range_min) }} - ${{ "{:,.0f}".format(house.investment_range_max) }})
+                                    {% endif %}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="requested_amount" class="form-label">Requested Investment Amount ($)</label>
+                            <input type="number" class="form-control" id="requested_amount" name="requested_amount" 
+                                   step="1000" min="1000" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="pitch_text" class="form-label">Pitch Description</label>
+                            <textarea class="form-control" id="pitch_text" name="pitch_text" rows="8" 
+                                      placeholder="Describe your project, vision, target audience, and why this media house should invest..." required></textarea>
+                        </div>
+
+                        <div class="bg-light p-4 rounded mb-4">
+                            <h6 class="text-primary mb-3">
+                                <i class="fas fa-lightbulb me-1"></i>
+                                Pitch Tips
+                            </h6>
+                            <ul class="list-unstyled small mb-0">
+                                <li class="mb-2">• Start with a compelling hook that grabs attention</li>
+                                <li class="mb-2">• Clearly explain your unique value proposition</li>
+                                <li class="mb-2">• Include market research and target audience insights</li>
+                                <li class="mb-2">• Outline your production timeline and milestones</li>
+                                <li class="mb-0">• Explain why this specific media house is the right partner</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('projects.detail', id=project.id) }}" class="btn btn-outline-secondary me-md-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-1"></i>Submit Pitch
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

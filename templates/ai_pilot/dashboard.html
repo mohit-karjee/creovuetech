@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}AI Pilot - Creative Assistant - Creovue{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-robot text-primary me-2"></i>
+                    AI Pilot - Creative Assistant
+                </h1>
+                <span class="badge bg-success fs-6">Instant Assistance</span>
+            </div>
+
+            <!-- Quick Request Form -->
+            <div class="row mb-4">
+                <div class="col-lg-8 col-xl-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-magic me-2"></i>
+                                Get Instant Creative Guidance
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="POST" action="{{ url_for('ai_pilot.create_request') }}">
+                                <div class="mb-3">
+                                    <label for="request_type" class="form-label">What do you need help with?</label>
+                                    <select class="form-select" id="request_type" name="request_type" required>
+                                        <option value="">Choose your assistance type...</option>
+                                        <option value="budget_planning">Budget Planning & Financial Strategy</option>
+                                        <option value="script_draft">Script Writing & Story Development</option>
+                                        <option value="marketing_strategy">Marketing & Promotion Strategy</option>
+                                        <option value="creative_direction">Creative Direction & Vision</option>
+                                        <option value="technical_guidance">Technical Production Guidance</option>
+                                        <option value="collaboration">Team Building & Collaboration</option>
+                                        <option value="distribution">Distribution & Platform Strategy</option>
+                                        <option value="funding">Funding & Investment Guidance</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="project_id" class="form-label">Related Project (Optional)</label>
+                                    <select class="form-select" id="project_id" name="project_id">
+                                        <option value="">General guidance (not project-specific)</option>
+                                        {% for project in current_user.projects %}
+                                        <option value="{{ project.id }}">{{ project.title }} - {{ project.category|title }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Describe Your Challenge</label>
+                                    <textarea class="form-control" id="description" name="description" rows="4" 
+                                              placeholder="Describe your specific challenge, goal, or question. The more detail you provide, the better guidance I can offer..." required></textarea>
+                                </div>
+
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-paper-plane me-1"></i>Get Instant Guidance
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Assistance Info -->
+                <div class="col-lg-4 col-xl-6">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h6 class="text-primary mb-3">
+                                <i class="fas fa-lightbulb me-1"></i>
+                                AI Pilot Features
+                            </h6>
+                            <ul class="list-unstyled small mb-0">
+                                <li class="mb-2">✓ Instant budget planning and cost optimization</li>
+                                <li class="mb-2">✓ Script structure and story development guidance</li>
+                                <li class="mb-2">✓ Marketing strategies for different platforms</li>
+                                <li class="mb-2">✓ Technical production recommendations</li>
+                                <li class="mb-2">✓ Funding and investment strategies</li>
+                                <li class="mb-2">✓ Distribution and audience targeting</li>
+                                <li class="mb-2">✓ Creative problem-solving assistance</li>
+                                <li class="mb-0">✓ Industry best practices and insights</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="card mt-3">
+                        <div class="card-body">
+                            <h6 class="text-success mb-3">
+                                <i class="fas fa-clock me-1"></i>
+                                Response Time
+                            </h6>
+                            <p class="mb-0 small">
+                                Get comprehensive, tailored guidance instantly. No waiting - your creative assistant is always ready to help you overcome challenges and optimize your projects.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Requests History -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Recent AI Assistance History</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_requests %}
+                    <div class="row">
+                        {% for request in recent_requests %}
+                        <div class="col-lg-6 mb-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <span class="badge bg-primary">{{ request.request_type.replace('_', ' ')|title }}</span>
+                                        <small class="text-muted">{{ request.created_at.strftime('%b %d, %Y') }}</small>
+                                    </div>
+                                    <h6 class="card-title">{{ request.description[:100] }}{% if request.description|length > 100 %}...{% endif %}</h6>
+                                    
+                                    {% if request.ai_response %}
+                                    <div class="collapse" id="response{{ request.id }}">
+                                        <div class="bg-light p-3 rounded mt-2">
+                                            <small>{{ request.ai_response[:300]|replace('\n', '<br>')|safe }}{% if request.ai_response|length > 300 %}...{% endif %}</small>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-primary mt-2" type="button" 
+                                            data-bs-toggle="collapse" data-bs-target="#response{{ request.id }}">
+                                        <i class="fas fa-eye me-1"></i>View Response
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-robot fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">Welcome to AI Pilot!</h5>
+                        <p class="text-muted mb-0">Start by asking for creative guidance above. Your AI assistant is ready to help with any project challenge.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

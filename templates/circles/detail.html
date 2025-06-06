@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+
+{% block title %}{{ circle.name }} - Creovue{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Circle Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('circles.list') }}">Circles</a></li>
+                    <li class="breadcrumb-item active">{{ circle.name }}</li>
+                </ol>
+            </nav>
+            
+            <div class="d-flex align-items-start justify-content-between">
+                <div>
+                    <h1 class="display-6 fw-bold mb-2">{{ circle.name }}</h1>
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <span class="badge badge-primary category-badge">{{ circle.category.title() }}</span>
+                        <span class="text-muted">
+                            <i class="fas fa-users me-1"></i>
+                            {{ circle.member_count }} / {{ circle.max_members }} members
+                        </span>
+                        <span class="text-muted">
+                            <i class="fas fa-calendar me-1"></i>
+                            Created {{ circle.created_at.strftime('%B %d, %Y') }}
+                        </span>
+                        {% if not circle.is_public %}
+                        <span class="badge badge-warning">
+                            <i class="fas fa-lock me-1"></i>Private
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="d-flex gap-2">
+                    {% if current_user.is_authenticated %}
+                        {% if is_member %}
+                            {% if user_membership.role == 'owner' %}
+                            <button class="btn btn-outline-primary" disabled>
+                                <i class="fas fa-crown me-2"></i>Circle Owner
+                            </button>
+                            {% else %}
+                            <form method="POST" action="{{ url_for('circles.leave', id=circle.id) }}" class="d-inline">
+                                <button type="submit" class="btn btn-outline-danger" 
+                                        onclick="return confirm('Are you sure you want to leave this circle?')">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Leave Circle
+                                </button>
+                            </form>
+                            {% endif %}
+                        {% else %}
+                            {% if circle.member_count < circle.max_members %}
+                            <form method="POST" action="{{ url_for('circles.join', id=circle.id) }}" class="d-inline">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-user-plus me-2"></i>Join Circle
+                                </button>
+                            </form>
+                            {% else %}
+                            <button class="btn btn-secondary" disabled>
+                                <i class="fas fa-users me-2"></i>Circle Full
+                            </button>
+                            {% endif %}
+                        {% endif %}
+                    {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-primary">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login to Join
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Description -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>About This Circle
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">{{ circle.description }}</p>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-2">Circle Owner</h6>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-user-circle fa-2x text-primary me-3"></i>
+                                <div>
+                                    <strong>{{ circle.owner.full_name or circle.owner.username }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ circle.owner.creator_type.title() if circle.owner.creator_type else 'Creator' }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-2">Circle Stats</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>Category:</strong> {{ circle.category.title() }}</li>
+                                <li><strong>Members:</strong> {{ circle.member_count }} / {{ circle.max_members }}</li>
+                                <li><strong>Projects:</strong> {{ circle_projects|length }}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Circle Projects -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-project-diagram me-2"></i>Circle Projects
+                    </h5>
+                    {% if is_member %}
+                    <a href="{{ url_for('projects.create') }}?circle_id={{ circle.id }}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-plus me-1"></i>New Project
+                    </a>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    {% if circle_projects %}
+                    <div class="row g-4">
+                        {% for project in circle_projects %}
+                        <div class="col-md-6">
+                            <div class="card project-card h-100">
+                                <div class="card-header">
+                                    <h6 class="mb-1">{{ project.title }}</h6>
+                                    {% if project.funding_goal > 0 %}
+                                    <div class="funding-info small">
+                                        <i class="fas fa-dollar-sign me-1"></i>
+                                        Goal: ${{ "{:,.0f}".format(project.funding_goal) }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="card-body">
+                                    <span class="badge badge-secondary category-badge mb-2">{{ project.category.title() }}</span>
+                                    {% if project.funding_goal > 0 %}
+                                    <div class="funding-progress mb-3">
+                                        <div class="funding-stats">
+                                            <span>${{ "{:,.0f}".format(project.current_funding) }} raised</span>
+                                            <span>{{ "{:.0f}".format(project.funding_percentage) }}%</span>
+                                        </div>
+                                        <div class="progress">
+                                            <div class="progress-bar" role="progressbar" 
+                                                 style="width: {{ project.funding_percentage }}%" 
+                                                 aria-valuenow="{{ project.funding_percentage }}" 
+                                                 aria-valuemin="0" aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    <p class="card-text small">{{ project.description[:100] }}{% if project.description|length > 100 %}...{% endif %}</p>
+                                </div>
+                                <div class="card-footer bg-transparent">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">by {{ project.creator.username }}</small>
+                                        <a href="{{ url_for('projects.detail', id=project.id) }}" class="btn btn-sm btn-success">
+                                            View Project
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-project-diagram fa-3x text-muted mb-3"></i>
+                        <h6>No projects yet</h6>
+                        <p class="text-muted">This circle hasn't started any projects yet.</p>
+                        {% if is_member %}
+                        <a href="{{ url_for('projects.create') }}?circle_id={{ circle.id }}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Start First Project
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Members -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-users me-2"></i>Circle Members
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if circle.members %}
+                    {% for member in circle.members[:10] %}
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-user-circle fa-2x text-primary me-3"></i>
+                        <div class="flex-grow-1">
+                            <strong>{{ member.full_name or member.username }}</strong>
+                            {% if member.id == circle.owner_id %}
+                            <span class="badge badge-warning ms-1">Owner</span>
+                            {% endif %}
+                            <br>
+                            <small class="text-muted">{{ member.creator_type.title() if member.creator_type else 'Creator' }}</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% if circle.members|length > 10 %}
+                    <div class="text-center">
+                        <small class="text-muted">And {{ circle.members|length - 10 }} more members...</small>
+                    </div>
+                    {% endif %}
+                    {% else %}
+                    <div class="text-center py-3">
+                        <i class="fas fa-user-plus fa-2x text-muted mb-2"></i>
+                        <p class="text-muted small">No members yet.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Circle Guidelines -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-clipboard-list me-2"></i>Circle Guidelines
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled small">
+                        <li class="mb-2">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            Respect all members and their creative ideas
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            Share constructive feedback and support
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            Contribute actively to circle projects
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            Maintain professional communication
+                        </li>
+                        <li class="mb-0">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            Respect intellectual property rights
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

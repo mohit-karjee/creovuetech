@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Publish Work - Creovue{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="d-flex align-items-center mb-4">
+                <a href="{{ url_for('publications.showcase') }}" class="btn btn-outline-secondary me-3">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-upload text-primary me-2"></i>
+                    Publish Work for Crowdfunding
+                </h1>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('publications.publish_work') }}">
+                        <input type="hidden" name="project_id" value="{{ project.id }}">
+                        
+                        <div class="mb-4">
+                            <label for="title" class="form-label">Publication Title</label>
+                            <input type="text" class="form-control" id="title" name="title" 
+                                   value="{{ project.title }}" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="5" required>{{ project.description }}</textarea>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="showcase_type" class="form-label">Content Type</label>
+                                <select class="form-select" id="showcase_type" name="showcase_type" required>
+                                    <option value="">Select type...</option>
+                                    <option value="video">Video</option>
+                                    <option value="audio">Audio</option>
+                                    <option value="image">Image/Gallery</option>
+                                    <option value="document">Document</option>
+                                    <option value="demo">Live Demo</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="funding_goal" class="form-label">Funding Goal ($)</label>
+                                <input type="number" class="form-control" id="funding_goal" name="funding_goal" 
+                                       step="0.01" min="0" placeholder="0.00">
+                                <div class="form-text">Leave blank for no funding target</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="external_url" class="form-label">Content URL</label>
+                            <input type="url" class="form-control" id="external_url" name="external_url" 
+                                   placeholder="https://youtube.com/watch?v=... or link to your work">
+                            <div class="form-text">Link to your video, portfolio, or external content</div>
+                        </div>
+
+                        <div class="bg-light p-4 rounded mb-4">
+                            <h6 class="text-primary mb-3">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Publishing Guidelines
+                            </h6>
+                            <ul class="list-unstyled small mb-0">
+                                <li class="mb-2">✓ Ensure your content is original and you own the rights</li>
+                                <li class="mb-2">✓ Provide clear descriptions to help supporters understand your project</li>
+                                <li class="mb-2">✓ Include funding goals if you're seeking crowdfunding support</li>
+                                <li class="mb-0">✓ External links should lead to professional presentations of your work</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('publications.showcase') }}" class="btn btn-outline-secondary me-md-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-upload me-1"></i>Publish Work
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

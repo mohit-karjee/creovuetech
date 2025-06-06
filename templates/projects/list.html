@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% block title %}Projects - Creovue{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-6 fw-bold">
+                <i class="fas fa-project-diagram me-3"></i>Creative Projects
+            </h1>
+            <p class="lead text-muted">Discover innovative projects from creators around the world</p>
+        </div>
+        {% if current_user.is_authenticated %}
+        <div class="col-auto">
+            <a href="{{ url_for('projects.create') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Create Project
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-3">
+                    <label for="search" class="form-label">Search Projects</label>
+                    <input type="search" class="form-control" id="search" name="search" 
+                           value="{{ current_search }}" placeholder="Search by title or description...">
+                </div>
+                <div class="col-md-3">
+                    <label for="category" class="form-label">Category</label>
+                    <select class="form-select" id="category" name="category">
+                        <option value="">All Categories</option>
+                        <option value="film" {{ 'selected' if current_category == 'film' }}>Film & Video</option>
+                        <option value="music" {{ 'selected' if current_category == 'music' }}>Music & Audio</option>
+                        <option value="art" {{ 'selected' if current_category == 'art' }}>Visual Arts</option>
+                        <option value="writing" {{ 'selected' if current_category == 'writing' }}>Writing & Literature</option>
+                        <option value="design" {{ 'selected' if current_category == 'design' }}>Design</option>
+                        <option value="gaming" {{ 'selected' if current_category == 'gaming' }}>Gaming</option>
+                        <option value="photography" {{ 'selected' if current_category == 'photography' }}>Photography</option>
+                        <option value="other" {{ 'selected' if current_category == 'other' }}>Other</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="status" class="form-label">Status</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="">All Statuses</option>
+                        <option value="planning" {{ 'selected' if current_status == 'planning' }}>Planning</option>
+                        <option value="funding" {{ 'selected' if current_status == 'funding' }}>Seeking Funding</option>
+                        <option value="production" {{ 'selected' if current_status == 'production' }}>In Production</option>
+                        <option value="completed" {{ 'selected' if current_status == 'completed' }}>Completed</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="fas fa-search me-1"></i>Search
+                    </button>
+                    <a href="{{ url_for('projects.list') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-1"></i>Clear
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Project Stats -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h4 class="text-primary">{{ projects|length }}</h4>
+                    <p class="text-muted mb-0">Active Projects</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h4 class="text-success">${{ "{:,.0f}".format(projects|sum(attribute='current_funding')) }}</h4>
+                    <p class="text-muted mb-0">Total Funding</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h4 class="text-warning">{{ projects|selectattr('status', 'equalto', 'funding')|list|length }}</h4>
+                    <p class="text-muted mb-0">Seeking Funding</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h4 class="text-info">{{ projects|selectattr('status', 'equalto', 'completed')|list|length }}</h4>
+                    <p class="text-muted mb-0">Completed</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results -->
+    {% if projects %}
+    <div class="row g-4">
+        {% for project in projects %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card project-card h-100">
+                <div class="card-header">
+                    <h5 class="mb-1">{{ project.title }}</h5>
+                    {% if project.funding_goal > 0 %}
+                    <div class="funding-info">
+                        <i class="fas fa-dollar-sign me-1"></i>
+                        Goal: ${{ "{:,.0f}".format(project.funding_goal) }}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge badge-secondary category-badge">{{ project.category.title() }}</span>
+                        <span class="badge badge-{{ 'success' if project.status == 'completed' else 'warning' if project.status == 'production' else 'primary' if project.status == 'funding' else 'info' }}">
+                            {{ project.status.title() }}
+                        </span>
+                    </div>
+                    
+                    {% if project.funding_goal > 0 %}
+                    <div class="funding-progress mb-3">
+                        <div class="funding-stats">
+                            <span>${{ "{:,.0f}".format(project.current_funding) }} raised</span>
+                            <span>{{ "{:.0f}".format(project.funding_percentage) }}%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar" role="progressbar" 
+                                 style="width: {{ project.funding_percentage }}%" 
+                                 aria-valuenow="{{ project.funding_percentage }}" 
+                                 aria-valuemin="0" aria-valuemax="100">
+                            </div>
+                        </div>
+                        {% if project.days_remaining > 0 %}
+                        <div class="text-center mt-2">
+                            <small class="text-muted">{{ project.days_remaining }} days remaining</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    <p class="card-text">{{ project.description[:120] }}{% if project.description|length > 120 %}...{% endif %}</p>
+                    
+                    <div class="d-flex align-items-center text-muted small mb-3">
+                        <i class="fas fa-user me-1"></i>
+                        <span>by {{ project.creator.username }}</span>
+                        <span class="ms-auto">{{ project.created_at.strftime('%b %d') }}</span>
+                    </div>
+                    
+                    {% if project.circle %}
+                    <div class="mb-3">
+                        <a href="{{ url_for('circles.detail', id=project.circle.id) }}" class="text-decoration-none">
+                            <span class="badge badge-primary">
+                                <i class="fas fa-users me-1"></i>{{ project.circle.name }}
+                            </span>
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-transparent">
+                    <div class="d-flex justify-content-between align-items-center">
+                        {% if project.funding_goal > 0 and project.status == 'funding' %}
+                        <button class="btn btn-sm btn-success">
+                            <i class="fas fa-heart me-1"></i>Support
+                        </button>
+                        {% else %}
+                        <button class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-handshake me-1"></i>Collaborate
+                        </button>
+                        {% endif %}
+                        
+                        <a href="{{ url_for('projects.detail', id=project.id) }}" class="btn btn-sm btn-primary">
+                            View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Load More (if needed) -->
+    {% if projects|length >= 12 %}
+    <div class="text-center mt-5">
+        <button class="btn btn-outline-primary btn-lg">
+            <i class="fas fa-plus me-2"></i>Load More Projects
+        </button>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <!-- Empty State -->
+    <div class="text-center py-5">
+        <i class="fas fa-search fa-4x text-muted mb-4"></i>
+        <h3>No projects found</h3>
+        {% if current_search or current_category or current_status %}
+        <p class="text-muted mb-4">
+            Try adjusting your search criteria or browse all projects.
+        </p>
+        <a href="{{ url_for('projects.list') }}" class="btn btn-primary me-3">
+            <i class="fas fa-list me-2"></i>Show All Projects
+        </a>
+        {% else %}
+        <p class="text-muted mb-4">
+            Be the first to showcase your creative vision on Creovue!
+        </p>
+        {% endif %}
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('projects.create') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Create First Project
+        </a>
+        {% else %}
+        <a href="{{ url_for('auth.register') }}" class="btn btn-primary">
+            <i class="fas fa-user-plus me-2"></i>Join Creovue
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
